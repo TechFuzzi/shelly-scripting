@@ -1,0 +1,87 @@
+//One-Button-Script; by Benjamin Bruder 10/2023
+//über http://0.0.0.0/rpc/Script.List die id des Script raussuchen und dieses dann mit dem Taster aufrufen:
+///http://0.0.0.0/rpc/Script.Start?id=xxx
+
+/*
+function openCoverTo(pos) {
+  var current_pos = Shelly.getComponentStatus("cover:0").current_pos;
+  if (pos > current_pos) {
+    Shelly.call("Cover.GoToPosition", {'id': 0, 'pos': pos});
+  }
+}
+function closeCoverTo(pos) {
+  var current_pos = Shelly.getComponentStatus("cover:0").current_pos;
+  if (pos < current_pos) {
+    Shelly.call("Cover.GoToPosition", {'id': 0, 'pos': pos});
+  }
+}
+*/
+
+function stopCover() {
+    Shelly.call("Cover.Stop", {'id': 0});
+}
+function closeCover() {
+    Shelly.call("Cover.Close", {'id': 0});
+}
+function openCover() {
+    Shelly.call("Cover.Open", {'id': 0});
+}
+function stopScript(){
+    Shelly.call("Script.Stop", {'id': Shelly.getCurrentScriptId()});
+}
+
+Shelly.call(
+  "cover.getstatus",
+  {
+    //for more than one input devices use the respective id
+    id: 0,
+  },
+  function (result, error_code, error_message) {
+    print(JSON.stringify(result));
+    //peek into result.state
+    var state = result.state;
+    var last_direction = result.last_direction;
+    print("Aktueller Status: "+state);
+    print("Letzte Richtung: "+last_direction);
+    
+    if (state === "opening") {
+      stopCover();
+      print("Cover is now stopping");
+      stopScript()
+    }
+    
+    if (state === "closing") {
+      stopCover();
+      print("Cover is now stopping");
+      stopScript()
+    }
+    
+    if (state === "closed") {
+      openCover()
+      print("Cover is now opening");
+      stopScript()
+    }
+    
+    if (state === "open") {
+      closeCover()
+      print("Cover is now closing");
+      stopScript()
+    }
+    
+    else if (state === "stopped") {
+      print("Cover stopped");
+      if (last_direction === "open"){
+        closeCover()
+        print("Cover is now closing");
+        stopScript()
+      }
+      if (last_direction === "close" || last_direction === null){
+        openCover()
+        print("Cover is now opening");
+        stopScript()
+      }
+    }
+    
+    
+  }
+);
